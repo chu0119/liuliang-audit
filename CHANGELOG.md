@@ -22,6 +22,10 @@
 - 8 个知识库文档：pcap 基础 / 流量画像 / 协议深挖 / 攻击检测 / CTF 取证 / 应急研判 / 可视化规范 / IDS 引擎
 - 测试套件：71 个测试（单元 + 真实 tshark 集成 + 端到端全流程），GitHub Actions CI
 
+### Fixed
+
+- Wireshark ≥4.2 DNS 字段更名兼容：自动探测 `dns.qname`（新）/`dns.qry.name`（旧），四个使用 DNS 字段的脚本在全部 tshark 版本上可用
+
 ### Security
 
 - 所有 tshark/capinfos 子进程失败立即 RuntimeError（含 stderr 摘要），杜绝静默空结果

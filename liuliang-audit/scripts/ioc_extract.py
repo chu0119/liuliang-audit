@@ -45,6 +45,20 @@ def _tshark_fields(pcap: str, fields: list, display_filter: str = "",
     return [line.split("\t") for line in out.splitlines() if line.strip()]
 
 
+_DNS_FIELD = None
+
+
+def _dns_qname_field() -> str:
+    """Wireshark ≥4.2 将 dns.qry.name 更名为 dns.qname，探测选择当前版本可用名。"""
+    global _DNS_FIELD
+    if _DNS_FIELD is None:
+        out = _run(["tshark", "-G", "fields"]).stdout
+        names = {line.split("\t")[2] for line in out.splitlines()
+                 if line.count("\t") >= 2}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+    return _DNS_FIELD
+
+
 def _dedupe(values) -> list:
     """去重并保持首次出现顺序，剔除空值。"""
     return list(dict.fromkeys(v for v in values if v))
@@ -54,7 +68,7 @@ def extract_iocs(pcap_path: str) -> dict:
     ips = _dedupe(r[0].strip() for r in
                   _tshark_fields(pcap_path, ["ip.dst"], "ip.dst"))
     domains = _dedupe(r[0].strip() for r in
-                      _tshark_fields(pcap_path, ["dns.qry.name"],
+                      _tshark_fields(pcap_path, [_dns_qname_field()],
                                      "dns.flags.response==0"))
     # host 与 uri 同一次调用按包对齐提取：比两次调用再 zip 更稳健，
     # 避免 filter 命中集合在两次调用间不一致时错位拼接。

@@ -140,9 +140,22 @@ def _parse_io_stat(out: str) -> list:
     return rows
 
 
+_DNS_FIELD = None
+
+
+def _dns_qname_field() -> str:
+    """Wireshark ≥4.2 将 dns.qry.name 更名为 dns.qname，探测选择当前版本可用名。"""
+    global _DNS_FIELD
+    if _DNS_FIELD is None:
+        names = {line.split("\t")[2] for line in _run(["tshark", "-G", "fields"]).splitlines()
+                 if line.count("\t") >= 2}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+    return _DNS_FIELD
+
+
 def _dns_summary(pcap: str) -> dict:
     """DNS 查询统计。-z dns,tree 不含域名明细，改用 -T fields 提取。"""
-    rows = _tshark_fields(pcap, ["dns.qry.name"], "dns.flags.response==0")
+    rows = _tshark_fields(pcap, [_dns_qname_field()], "dns.flags.response==0")
     counts = Counter(r[0].strip() for r in rows if r and r[0].strip())
     top = [{"domain": d, "count": c} for d, c in counts.most_common(10)]
     return {"queries_total": sum(counts.values()),

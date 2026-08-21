@@ -20,6 +20,20 @@ def _run(cmd: list):
     return r
 
 
+_DNS_FIELD = None
+
+
+def _dns_qname_field() -> str:
+    """Wireshark ≥4.2 将 dns.qry.name 更名为 dns.qname，探测选择当前版本可用名。"""
+    global _DNS_FIELD
+    if _DNS_FIELD is None:
+        out = _run(["tshark", "-G", "fields"]).stdout
+        names = {line.split("\t")[2] for line in out.splitlines()
+                 if line.count("\t") >= 2}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+    return _DNS_FIELD
+
+
 def _entropy(s: str) -> float:
     if not s:
         return 0.0
@@ -29,7 +43,7 @@ def _entropy(s: str) -> float:
 
 def analyze_dns_entropy(pcap_path: str, entropy_threshold: float = 3.5,
                         min_len: int = 10) -> list[dict]:
-    cmd = ["tshark", "-r", pcap_path, "-T", "fields", "-e", "dns.qry.name",
+    cmd = ["tshark", "-r", pcap_path, "-T", "fields", "-e", _dns_qname_field(),
            "-Y", "dns.flags.response==0"]
     r = _run(cmd)
     seen = set()

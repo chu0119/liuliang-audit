@@ -20,7 +20,7 @@
 
 ## 📖 简介
 
-`liuliang-audit` 是一个面向专业安全人士的 [Claude Code](https://claude.com/claude-code) Skill。给它一个 pcap 流量包，它会以**五阶段工作流**（识别 → 画像 → 筛查 → 研判 → 输出）完成全类型分析：协议画像、攻击行为检测、C2 信标识别、文件取证、IOC 提取、攻击链还原，最终交付 **Markdown 报告 + 自包含 HTML 可视化报告 + MISP 格式 IOC 清单**。
+`liuliang-audit` 是一个面向专业安全人士的**流量分析审计技能（Skill）**，运行于 AI Agent 环境。给它一个 pcap 流量包，它会以**五阶段工作流**（识别 → 画像 → 筛查 → 研判 → 输出）完成全类型分析：协议画像、攻击行为检测、C2 信标识别、文件取证、IOC 提取、攻击链还原，最终交付 **Markdown 报告 + 自包含 HTML 可视化报告 + MISP 格式 IOC 清单**。
 
 与"跑一个脚本出一份日志"的工具不同，它是**阶段式人工节点**设计：每个阶段结束汇报发现、给出下一步选项，由分析师拍板方向——AI 负责跑腿和计算，研判权始终在你手里。
 
@@ -280,7 +280,5 @@ Wireshark 是交互式手工分析工具；liuliang-audit 把专业分析流程�
 <div align="center">
 
 **如果这个项目对你有帮助，欢迎点个 Star ⭐**
-
-*Built with [Claude Code](https://claude.com/claude-code) · Superpowers workflow (brainstorm → spec → plan → subagent-driven dev → final review)*
 
 </div>

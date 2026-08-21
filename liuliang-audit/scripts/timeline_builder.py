@@ -37,6 +37,20 @@ def _tshark_fields(pcap: str, fields: list, display_filter: str = "") -> list:
     return [line.split("\t") for line in out.splitlines() if line.strip()]
 
 
+_DNS_FIELD = None
+
+
+def _dns_qname_field() -> str:
+    """Wireshark ≥4.2 将 dns.qry.name 更名为 dns.qname，探测选择当前版本可用名。"""
+    global _DNS_FIELD
+    if _DNS_FIELD is None:
+        out = _run(["tshark", "-G", "fields"]).stdout
+        names = {line.split("\t")[2] for line in out.splitlines()
+                 if line.count("\t") >= 2}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+    return _DNS_FIELD
+
+
 def build_timeline(pcap_path: str) -> list[dict]:
     """从 DNS/HTTP/FTP 明文协议提取事件，按捕获时间升序返回。
 
@@ -48,7 +62,7 @@ def build_timeline(pcap_path: str) -> list[dict]:
     # DNS 查询事件（时间/源/目的/域名同一次调用按包对齐）
     for row in _tshark_fields(pcap_path,
                               ["frame.time_epoch", "frame.time",
-                               "ip.src", "ip.dst", "dns.qry.name"],
+                               "ip.src", "ip.dst", _dns_qname_field()],
                               "dns.flags.response==0"):
         if len(row) >= 5 and row[0].strip():
             try:
