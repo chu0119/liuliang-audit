@@ -45,10 +45,22 @@ def _dns_qname_field() -> str:
     global _DNS_FIELD
     if _DNS_FIELD is None:
         out = _run(["tshark", "-G", "fields"]).stdout
-        names = {line.split("\t")[2] for line in out.splitlines()
-                 if line.count("\t") >= 2}
-        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+        tokens = {tok for line in out.splitlines() for tok in line.split("\t")}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in tokens else "dns.qry.name"
     return _DNS_FIELD
+
+
+def _dns_extract(call):
+    """DNS 字段跨版本兼容：探测选名后运行时若仍报字段无效，自动切换另一名称重试一次。"""
+    global _DNS_FIELD
+    try:
+        return call(_dns_qname_field())
+    except RuntimeError as e:
+        msg = str(e)
+        if "aren't valid" not in msg and "invalid" not in msg.lower():
+            raise
+    _DNS_FIELD = "dns.qry.name" if _DNS_FIELD == "dns.qname" else "dns.qname"
+    return _dns_extract(call)
 
 
 def build_timeline(pcap_path: str) -> list[dict]:
@@ -60,10 +72,11 @@ def build_timeline(pcap_path: str) -> list[dict]:
     """
     timed = []
     # DNS 查询事件（时间/源/目的/域名同一次调用按包对齐）
-    for row in _tshark_fields(pcap_path,
-                              ["frame.time_epoch", "frame.time",
-                               "ip.src", "ip.dst", _dns_qname_field()],
-                              "dns.flags.response==0"):
+    dns_rows = _dns_extract(lambda f: _tshark_fields(
+        pcap_path,
+        ["frame.time_epoch", "frame.time", "ip.src", "ip.dst", f],
+        "dns.flags.response==0"))
+    for row in dns_rows:
         if len(row) >= 5 and row[0].strip():
             try:
                 key = float(row[0])

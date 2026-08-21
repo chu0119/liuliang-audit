@@ -147,15 +147,29 @@ def _dns_qname_field() -> str:
     """Wireshark ≥4.2 将 dns.qry.name 更名为 dns.qname，探测选择当前版本可用名。"""
     global _DNS_FIELD
     if _DNS_FIELD is None:
-        names = {line.split("\t")[2] for line in _run(["tshark", "-G", "fields"]).splitlines()
-                 if line.count("\t") >= 2}
-        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+        out = _run(["tshark", "-G", "fields"])
+        tokens = {tok for line in out.splitlines() for tok in line.split("\t")}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in tokens else "dns.qry.name"
     return _DNS_FIELD
+
+
+def _dns_extract(call):
+    """DNS 字段跨版本兼容：探测选名后运行时若仍报字段无效，自动切换另一名称重试一次。"""
+    global _DNS_FIELD
+    try:
+        return call(_dns_qname_field())
+    except RuntimeError as e:
+        msg = str(e)
+        if "aren't valid" not in msg and "invalid" not in msg.lower():
+            raise
+    _DNS_FIELD = "dns.qry.name" if _DNS_FIELD == "dns.qname" else "dns.qname"
+    return _dns_extract(call)
 
 
 def _dns_summary(pcap: str) -> dict:
     """DNS 查询统计。-z dns,tree 不含域名明细，改用 -T fields 提取。"""
-    rows = _tshark_fields(pcap, [_dns_qname_field()], "dns.flags.response==0")
+    rows = _dns_extract(lambda f: _tshark_fields(
+        pcap, [f], "dns.flags.response==0"))
     counts = Counter(r[0].strip() for r in rows if r and r[0].strip())
     top = [{"domain": d, "count": c} for d, c in counts.most_common(10)]
     return {"queries_total": sum(counts.values()),

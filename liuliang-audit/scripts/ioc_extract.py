@@ -53,10 +53,22 @@ def _dns_qname_field() -> str:
     global _DNS_FIELD
     if _DNS_FIELD is None:
         out = _run(["tshark", "-G", "fields"]).stdout
-        names = {line.split("\t")[2] for line in out.splitlines()
-                 if line.count("\t") >= 2}
-        _DNS_FIELD = "dns.qname" if "dns.qname" in names else "dns.qry.name"
+        tokens = {tok for line in out.splitlines() for tok in line.split("\t")}
+        _DNS_FIELD = "dns.qname" if "dns.qname" in tokens else "dns.qry.name"
     return _DNS_FIELD
+
+
+def _dns_extract(call):
+    """DNS 字段跨版本兼容：探测选名后运行时若仍报字段无效，自动切换另一名称重试一次。"""
+    global _DNS_FIELD
+    try:
+        return call(_dns_qname_field())
+    except RuntimeError as e:
+        msg = str(e)
+        if "aren't valid" not in msg and "invalid" not in msg.lower():
+            raise
+    _DNS_FIELD = "dns.qry.name" if _DNS_FIELD == "dns.qname" else "dns.qname"
+    return _dns_extract(call)
 
 
 def _dedupe(values) -> list:
@@ -67,9 +79,9 @@ def _dedupe(values) -> list:
 def extract_iocs(pcap_path: str) -> dict:
     ips = _dedupe(r[0].strip() for r in
                   _tshark_fields(pcap_path, ["ip.dst"], "ip.dst"))
-    domains = _dedupe(r[0].strip() for r in
-                      _tshark_fields(pcap_path, [_dns_qname_field()],
-                                     "dns.flags.response==0"))
+    domain_rows = _dns_extract(lambda f: _tshark_fields(
+        pcap_path, [f], "dns.flags.response==0"))
+    domains = _dedupe(r[0].strip() for r in domain_rows)
     # host 与 uri 同一次调用按包对齐提取：比两次调用再 zip 更稳健，
     # 避免 filter 命中集合在两次调用间不一致时错位拼接。
     url_rows = _tshark_fields(pcap_path, ["http.host", "http.request.uri"],
