@@ -190,6 +190,27 @@ def test_synthetic_profile_renders_hypotheses_and_totals(tmp_path):
         assert ph not in content
 
 
+def test_placeholder_lookalike_data_not_reprocessed(tmp_path):
+    """数据值中出现占位符样式字符串时不得被二次替换（单遍替换守卫）。"""
+    profile = _synthetic_profile()
+    profile["capture"]["link_type"] = "{{DNS_ROWS}}"
+    out = tmp_path / "lookalike.html"
+    generate_html_report("x.pcap", str(out), profile, [], {})
+    content = out.read_text(encoding="utf-8")
+    assert "<td>{{DNS_ROWS}}</td>" in content
+
+
+def test_pcap_name_is_escaped(tmp_path):
+    """文件名同样不可信，注入 <title>/基本信息前必须转义。
+    （payload 不能含 '/'——那会被 Path 当作目录分隔符截断。）"""
+    out = tmp_path / "name.html"
+    generate_html_report('"><svg onload=alert(1)>.pcap', str(out),
+                         _synthetic_profile(), [], {})
+    content = out.read_text(encoding="utf-8")
+    assert "<svg onload=alert(1)>" not in content
+    assert "&quot;&gt;&lt;svg onload=alert(1)&gt;.pcap" in content
+
+
 def test_missing_template_raises_loudly(monkeypatch, tmp_path):
     """全局约束：模板缺失必须响亮报错，不得静默产出空壳文件。"""
     monkeypatch.setattr(html_report, "TEMPLATE_PATH",

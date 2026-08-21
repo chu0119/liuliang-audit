@@ -14,6 +14,7 @@
 """
 import html
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -57,7 +58,7 @@ def _fmt_timeline(events: list) -> str:
         f'[{_esc(e.get("type", ""))}]</span> '
         f'{_esc(e.get("src", ""))} → {_esc(e.get("dst", ""))}: '
         f'{_esc(e.get("detail", ""))} '
-        f'<small>({e.get("timestamp", "")})</small></div>'
+        f'<small>{_esc(e.get("timestamp", ""))}</small></div>'
         for e in events[:50])
 
 
@@ -115,12 +116,13 @@ def generate_html_report(pcap_path: str, output_path: str,
     capture = profile.get("capture", {})
     phs = profile.get("protocol_hierarchy", [])
     repl = {
-        "{{PCAP_NAME}}": Path(pcap_path).name,
-        "{{PACKETS_TOTAL}}": str(capture.get("packets_total", "")),
-        "{{DURATION}}": str(capture.get("duration_seconds", "")),
-        "{{SIZE_CLASS}}": str(profile.get("size_class", "")),
-        "{{START_TIME}}": str(capture.get("start_time", "")),
-        "{{LINK_TYPE}}": str(capture.get("link_type", "")),
+        # 基本信息标量同样经 _esc：文件名/时间串等均属不可信输入
+        "{{PCAP_NAME}}": _esc(Path(pcap_path).name),
+        "{{PACKETS_TOTAL}}": _esc(capture.get("packets_total", "")),
+        "{{DURATION}}": _esc(capture.get("duration_seconds", "")),
+        "{{SIZE_CLASS}}": _esc(profile.get("size_class", "")),
+        "{{START_TIME}}": _esc(capture.get("start_time", "")),
+        "{{LINK_TYPE}}": _esc(capture.get("link_type", "")),
         "{{ENDPOINTS_ROWS}}": _fmt_endpoints(profile.get("endpoints_top", [])),
         "{{DNS_ROWS}}": _fmt_dns(
             profile.get("dns_summary", {}).get("top_domains", [])),
@@ -141,8 +143,9 @@ def generate_html_report(pcap_path: str, output_path: str,
         raise RuntimeError(
             f"模板缺少必需占位符: {', '.join(missing)} (模板: {TEMPLATE_PATH})")
 
-    for k, v in repl.items():
-        tpl = tpl.replace(k, v)
+    # 单遍替换：数据值中即使出现占位符样式的字符串也不会被二次处理。
+    pattern = re.compile("|".join(re.escape(k) for k in repl))
+    tpl = pattern.sub(lambda m: repl[m.group(0)], tpl)
 
     Path(output_path).write_text(tpl, encoding="utf-8")
     return output_path
