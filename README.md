@@ -1,4 +1,4 @@
-# traffic-analysis — 专业流量分析审计 Skill
+# liuliang-audit — 专业流量分析审计 Skill
 
 面向专业安全人士的 Claude Code skill：对 pcap 流量包进行**全类型分析**（识别 → 画像 → 筛查 → 研判 → 输出），覆盖**安全攻防、应急响应、CTF 取证**三大场景，最终产出 Markdown 报告 + 自包含 HTML 可视化报告 + MISP 格式 IOC 清单。
 
@@ -35,8 +35,8 @@
 
 ```bash
 # 克隆并安装为 Claude Code 个人技能
-git clone https://github.com/chu0119/traffic-analysis.git
-cp -r traffic-analysis ~/.claude/skills/traffic-analysis
+git clone https://github.com/chu0119/liuliang-audit.git
+cp -r liuliang-audit ~/.claude/skills/liuliang-audit
 ```
 
 之后对 Claude 说"分析这个 pcap"或"CTF 流量取证"即可触发。
@@ -60,7 +60,7 @@ Skill 按五阶段工作流执行，每阶段结束汇报发现并等待你确�
 ## 目录结构
 
 ```
-traffic-analysis/
+liuliang-audit/
 ├── SKILL.md                  # 主入口：触发词 + 场景路由 + 阶段式工作流
 ├── references/               # 8 个知识库（协议要点/检测规则/CTF 模式/研判方法…）
 ├── scripts/                  # 7 个确定性分析脚本（独立可运行，标准库 + tshark）
@@ -87,7 +87,7 @@ traffic-analysis/
 ## 测试
 
 ```bash
-cd traffic-analysis
+cd liuliang-audit
 python -m pytest tests/ -v    # 71 个测试：单测 + 真实 tshark 集成 + 端到端全流程
 ```
 
