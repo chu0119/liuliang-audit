@@ -1,8 +1,8 @@
-# traffic-analysis Skill 发布信息
+# liuliang-audit Skill 发布信息
 
 ## 基本信息 (必填)
 
-**Skill 名称**：traffic-analysis
+**Skill 名称**：liuliang-audit
 
 **版本号**：1.0.0
 
@@ -62,11 +62,11 @@
 
 | 文件/目录 | 说明 |
 |-----------|------|
-| `traffic-analysis-v1.0.0.zip` | 技能压缩包（22 文件），解压到 `~/.claude/skills/` 即用 |
-| `traffic-analysis/SKILL.md` | 主入口：触发词 + 场景路由 + 五阶段工作流 |
-| `traffic-analysis/scripts/` ×7 | pcap_profile / beacon_detect / entropy_dns / extract_files / ioc_extract / timeline_builder / html_report |
-| `traffic-analysis/references/` ×8 | pcap 基础 / 流量画像 / 协议深挖 / 攻击检测 / CTF 取证 / 应急研判 / 可视化规范 / IDS 引擎 |
-| `traffic-analysis/templates/` ×5 | CTF / 应急响应 / 攻防复盘报告模板 + MISP CSV + HTML 模板 |
-| `traffic-analysis/examples/` | CTF HTTP 题完整走查范例 |
+| `liuliang-audit-v1.0.0.zip` | 技能压缩包（22 文件），解压到 `~/.claude/skills/` 即用 |
+| `liuliang-audit/SKILL.md` | 主入口：触发词 + 场景路由 + 五阶段工作流 |
+| `liuliang-audit/scripts/` ×7 | pcap_profile / beacon_detect / entropy_dns / extract_files / ioc_extract / timeline_builder / html_report |
+| `liuliang-audit/references/` ×8 | pcap 基础 / 流量画像 / 协议深挖 / 攻击检测 / CTF 取证 / 应急研判 / 可视化规范 / IDS 引擎 |
+| `liuliang-audit/templates/` ×5 | CTF / 应急响应 / 攻防复盘报告模板 + MISP CSV + HTML 模板 |
+| `liuliang-audit/examples/` | CTF HTTP 题完整走查范例 |
 
-开源地址：<https://github.com/chu0119/traffic-analysis>（License: MIT）
+开源地址：<https://github.com/chu0119/liuliang-audit>（License: MIT）

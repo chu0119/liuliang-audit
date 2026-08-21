@@ -1,5 +1,5 @@
 ---
-name: traffic-analysis
+name: liuliang-audit
 description: 专业流量分析审计 skill，对 pcap 流量包进行全类型分析（识别→画像→筛查→研判→输出）。覆盖安全攻防复盘、应急响应、CTF 流量取证三大场景。输出 Markdown 报告 + HTML 可视化报告 + MISP 格式 IOC 清单。触发关键词：流量分析、pcap 分析、流量取证、CTF 流量、应急响应流量、网络取证、packet capture、traffic audit、pcap forensics、流量研判。
 ---
 
