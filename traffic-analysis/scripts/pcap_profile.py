@@ -20,7 +20,7 @@ from math import log2
 from pathlib import Path
 
 
-def _run(cmd: list) -> str:
+def _run(cmd: list, check: bool = True) -> str:
     try:
         r = subprocess.run(cmd, capture_output=True, text=True,
                            encoding="utf-8", errors="replace")
@@ -28,6 +28,10 @@ def _run(cmd: list) -> str:
         raise RuntimeError(
             f"命令不存在: {cmd[0]}。请安装 Wireshark 套件 (tshark/capinfos) 并加入 PATH。"
         ) from e
+    if check and r.returncode != 0:
+        tail = "\n".join(r.stderr.strip().splitlines()[-5:])
+        raise RuntimeError(
+            f"命令失败 (exit {r.returncode}): {' '.join(cmd)}\n{tail}")
     return r.stdout
 
 
@@ -45,13 +49,17 @@ def _tshark_z(pcap: str, stat: str) -> str:
     return _run(["tshark", "-r", pcap, "-q", "-z", stat])
 
 
-def _tshark_fields(pcap: str, fields: list, display_filter: str = "") -> list:
-    """tshark -T fields 输出，按 | 分隔返回行列表（每行是字段值列表）。"""
+def _tshark_fields(pcap: str, fields: list, display_filter: str = "",
+                   check: bool = True) -> list:
+    """tshark -T fields 输出，按 | 分隔返回行列表（每行是字段值列表）。
+
+    check=False 时容忍 tshark 失败（用于可选增强字段，如 JA3），失败返回空。
+    """
     cmd = ["tshark", "-r", pcap, "-T", "fields", "-E", "separator=|"] + \
           [f"-e {f}" for f in fields]
     if display_filter:
         cmd += ["-Y", display_filter]
-    out = _run(cmd)
+    out = _run(cmd, check=check)
     return [line.split("|") for line in out.splitlines() if line.strip()]
 
 
@@ -142,21 +150,29 @@ def _dns_summary(pcap: str) -> dict:
 
 
 def _tls_summary(pcap: str) -> dict:
-    """TLS ClientHello 统计（handshakes / SNI / JA3）。"""
+    """TLS ClientHello 统计（handshakes / SNI / JA3）。
+
+    JA3 为可选增强字段（部分 tshark 构建缺失），单独一次调用并容忍失败，
+    失败不影响 handshakes / SNI。
+    """
     rows = _tshark_fields(
-        pcap, ["tls.handshake.type", "tls.handshake.extensions_server_name",
-               "tls.handshake.ja3"], "tls.handshake.type==1")
+        pcap, ["tls.handshake.type", "tls.handshake.extensions_server_name"],
+        "tls.handshake.type==1")
     handshakes = 0
     snis = []
-    ja3s = []
     for r in rows:
         if not r or not r[0].strip():
             continue
         handshakes += 1
         if len(r) > 1 and r[1].strip():
             snis.append(r[1].strip())
-        if len(r) > 2 and r[2].strip():
-            ja3s.append(r[2].strip())
+    ja3s = []
+    try:
+        ja3_rows = _tshark_fields(pcap, ["tls.handshake.ja3"],
+                                  "tls.handshake.type==1", check=False)
+        ja3s = [r[0].strip() for r in ja3_rows if r and r[0].strip()]
+    except RuntimeError:
+        ja3s = []
     unique_sni = list(dict.fromkeys(snis))
     ja3_fps = [{"ja3": j, "count": c} for j, c in Counter(ja3s).most_common()]
     return {"handshakes": handshakes, "unique_sni": unique_sni,
@@ -172,6 +188,8 @@ def _size_class(packets: int, duration: float) -> str:
 
 
 def _entropy(s: str) -> float:
+    if not s:
+        return 0.0
     p = [n / len(s) for n in Counter(s).values()]
     return -sum(x * log2(x) for x in p if x > 0)
 
@@ -257,4 +275,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python pcap_profile.py <pcap>", file=sys.stderr)
         sys.exit(1)
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError, OSError):
+        pass
     print(json.dumps(profile(sys.argv[1]), ensure_ascii=False, indent=2))
