@@ -49,6 +49,13 @@ def _fmt_dns(domains: list) -> str:
         for d in domains[:10])
 
 
+TIMELINE_LIMIT = 50
+IOC_LIMIT = 50
+IOC_CATEGORIES = [("ips", "ip"), ("domains", "domain"), ("urls", "url"),
+                  ("hashes", "hash"), ("ja3", "ja3"),
+                  ("user_agents", "user_agent")]
+
+
 def _fmt_timeline(events: list) -> str:
     if not events:
         return '<div class="timeline-item muted">无事件</div>'
@@ -59,7 +66,16 @@ def _fmt_timeline(events: list) -> str:
         f'{_esc(e.get("src", ""))} → {_esc(e.get("dst", ""))}: '
         f'{_esc(e.get("detail", ""))} '
         f'<small>{_esc(e.get("timestamp", ""))}</small></div>'
-        for e in events[:50])
+        for e in events[:TIMELINE_LIMIT])
+
+
+def _timeline_note(events: list) -> str:
+    """时间线被截断时的提示（总数透传自 generate_html_report）。"""
+    total = len(events)
+    if total <= TIMELINE_LIMIT:
+        return ""
+    return (f'<div class="timeline-item muted">'
+            f'（仅显示前 {TIMELINE_LIMIT} 条，共 {total} 条）</div>')
 
 
 def _fmt_hypotheses(hypotheses: list) -> str:
@@ -77,16 +93,25 @@ def _fmt_hypotheses(hypotheses: list) -> str:
 
 
 def _fmt_iocs(iocs: dict) -> str:
-    categories = [("ips", "ip"), ("domains", "domain"), ("urls", "url"),
-                  ("hashes", "hash"), ("ja3", "ja3"),
-                  ("user_agents", "user_agent")]
     rows = []
-    for key, label in categories:
-        for value in iocs.get(key, [])[:50]:
+    for key, label in IOC_CATEGORIES:
+        for value in iocs.get(key, [])[:IOC_LIMIT]:
             rows.append(f"<tr><td>{label}</td><td>{_esc(value)}</td></tr>")
     if not rows:
         return _empty_row(2)
     return "".join(rows)
+
+
+def _ioc_note(iocs: dict) -> str:
+    """IOC 类别被截断时的提示（总数透传自 generate_html_report）。"""
+    notes = []
+    for key, label in IOC_CATEGORIES:
+        total = len(iocs.get(key, []))
+        if total > IOC_LIMIT:
+            notes.append(f"{label} 仅显示前 {IOC_LIMIT} 条，共 {total} 条")
+    if not notes:
+        return ""
+    return '<p class="muted">（' + "；".join(notes) + "）</p>"
 
 
 def generate_html_report(pcap_path: str, output_path: str,
@@ -127,9 +152,11 @@ def generate_html_report(pcap_path: str, output_path: str,
         "{{DNS_ROWS}}": _fmt_dns(
             profile.get("dns_summary", {}).get("top_domains", [])),
         "{{TIMELINE_ITEMS}}": _fmt_timeline(timeline),
+        "{{TIMELINE_NOTE}}": _timeline_note(timeline),
         "{{HYPOTHESES_ROWS}}": _fmt_hypotheses(
             profile.get("suspicious_hypotheses", [])),
         "{{IOC_ROWS}}": _fmt_iocs(iocs),
+        "{{IOC_NOTE}}": _ioc_note(iocs),
         # 图表注入点为 JS 数组字面量：json.dumps 保证合法转义，
         # 协议名来自 tshark io,phs（ASCII），无引号冲突风险。
         "{{PROTO_LABELS}}": json.dumps([p["protocol"] for p in phs[:6]],

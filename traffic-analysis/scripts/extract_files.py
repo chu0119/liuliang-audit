@@ -1,6 +1,6 @@
 # scripts/extract_files.py
 """对象提取封装：调用 tshark --export-objects 并计算 SHA-256。"""
-import hashlib, shutil, subprocess, sys
+import hashlib, re, shutil, subprocess, sys
 from pathlib import Path
 
 
@@ -28,12 +28,21 @@ def extract_objects(pcap_path: str, output_dir: str, protocols: list[str] = None
     """
     if protocols is None:
         protocols = ["http", "smb", "tftp"]
+    invalid = [p for p in protocols if not re.fullmatch(r"[a-z0-9_-]+", p)]
+    if invalid:
+        raise ValueError(
+            f"非法协议名: {', '.join(map(repr, invalid))}"
+            "（协议名仅允许小写字母/数字/_/-，禁止路径分隔符等，"
+            "防止把导出目录写到 output_dir 之外）")
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     results = []
     for proto in protocols:
         proto_dir = out / proto
-        shutil.rmtree(proto_dir, ignore_errors=True)
+        if proto_dir.exists():
+            # 清理残留必须响亮失败（ignore_errors=False）：
+            # 文件被锁等异常不得静默留下陈旧文件污染本次结果。
+            shutil.rmtree(proto_dir)
         proto_dir.mkdir(parents=True, exist_ok=True)
         _run(["tshark", "-r", pcap_path, "--export-objects", f"{proto},{proto_dir}"])
         for f in sorted(proto_dir.iterdir()):

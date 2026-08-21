@@ -17,7 +17,7 @@ description: 专业流量分析审计 skill，对 pcap 流量包进行全类型�
 ## 前置条件
 
 - Wireshark 套件（tshark/capinfos/editcap/mergecap）—— 必装
-- Python 3.8+（标准库即可，scapy/pyshark 可选增强）
+- Python 3.9+（标准库即可，scapy/pyshark 可选增强；脚本使用了 list[str] 内置泛型注解，3.8 需 __future__ 导入）
 - Zeek / Suricata —— 可选，未装自动降级
 
 ## 工作流（阶段式，每阶段结束请分析师确认）
@@ -29,7 +29,7 @@ capinfos -M {{PCAP_PATH}}
 ```
 
 1. 读取元信息（包数/时长/大小/链路类型/是否截断）
-2. 规模定级：small（<50MB,<600s）/ medium / large（≥500MB 或 ≥1h）
+2. 规模定级（由 `pcap_profile.py` 按 File size + Capture duration 自动判定）：small（<50MB 且 <600s）/ medium（<500MB 且 <1h）/ large（≥500MB 或 ≥1h）
 3. 初步场景判定
 
 **汇报：** 文件画像 + 规模策略 + 场景初判，请分析师确认方向。
@@ -125,11 +125,11 @@ python scripts/html_report.py {{PCAP_PATH}} report.html
 
 ## 规模自适应
 
-| 规模 | 策略 |
-|------|------|
-| small | 全量深析 |
-| medium | 画像 → 过滤 → 定向深析 |
-| large | editcap 切片 + 流切割，分批处理 |
+| 规模 | 判定条件 | 策略 |
+|------|----------|------|
+| small | <50MB 且 <600s | 全量深析 |
+| medium | <500MB 且 <1h | 画像 → 过滤 → 定向深析 |
+| large | ≥500MB 或 ≥1h | editcap 切片 + 流切割，分批处理 |
 
 ## 错误处理
 

@@ -179,10 +179,17 @@ def _tls_summary(pcap: str) -> dict:
             "ja3_fingerprints": ja3_fps}
 
 
-def _size_class(packets: int, duration: float) -> str:
-    if packets < 50_000 and duration < 600:
+def _size_class(packets: int, duration: float, bytes_total: int) -> str:
+    """规模定级（与 references/01-pcap-basics.md 契约一致）：
+    small  = bytes<50MB 且 duration<600s
+    medium = bytes<500MB 且 duration<3600s
+    large  = 其余情况（bytes≥500MB 或 duration≥3600s）
+    bytes_total 来自 capinfos "File size"（恒为字节），duration 来自
+    "Capture duration"（秒）。packets 参数保留仅为签名自文档——包数
+    不参与判定，避免与 MB 契约冲突（高包数小文件仍按 small 处理）。"""
+    if bytes_total < 50 * 1024 * 1024 and duration < 600:
         return "small"
-    if packets < 500_000 and duration < 3600:
+    if bytes_total < 500 * 1024 * 1024 and duration < 3600:
         return "medium"
     return "large"
 
@@ -226,6 +233,7 @@ def profile(pcap_path: str) -> dict:
         return "" if v.lower() == "n/a" else v
 
     packets = _num("Number of packets")
+    bytes_total = _num("File size")
     duration = 0.0
     if "Capture duration" in info:
         try:
@@ -251,7 +259,7 @@ def profile(pcap_path: str) -> dict:
         "file": str(Path(pcap_path).resolve()),
         "capture": {
             "packets_total": packets,
-            "bytes_total": _num("File size"),
+            "bytes_total": bytes_total,
             "duration_seconds": duration,
             "start_time": _text("Earliest packet time")
                           or _text("First packet time"),
@@ -259,7 +267,7 @@ def profile(pcap_path: str) -> dict:
                          or _text("Capture type"),
             "truncated": "truncated" in info.get("File comment", "").lower(),
         },
-        "size_class": _size_class(packets, duration),
+        "size_class": _size_class(packets, duration, bytes_total),
         "protocol_hierarchy": phs,
         "endpoints_top": endpoints,
         "conversations_top": conversations_top,

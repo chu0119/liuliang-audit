@@ -51,12 +51,12 @@ footer{color:#9ca3af;font-size:12px;text-align:center;margin-top:24px}
 <div class="card"><h2>Top 域名</h2><table><tr><th>域名</th><th>次数</th></tr>{{DNS_ROWS}}</table></div>
 </div>
 
-<div class="card"><h2>事件时间线</h2><div class="timeline">{{TIMELINE_ITEMS}}</div></div>
+<div class="card"><h2>事件时间线</h2><div class="timeline">{{TIMELINE_ITEMS}}{{TIMELINE_NOTE}}</div></div>
 
 <div class="card"><h2>筛查假设（自动）</h2>
 <table><tr><th>类型</th><th>描述</th><th>证据</th></tr>{{HYPOTHESES_ROWS}}</table></div>
 
-<div class="card"><h2>IOC 清单</h2><table><tr><th>类型</th><th>值</th></tr>{{IOC_ROWS}}</table></div>
+<div class="card"><h2>IOC 清单</h2><table><tr><th>类型</th><th>值</th></tr>{{IOC_ROWS}}</table>{{IOC_NOTE}}</div>
 
 <footer>由 traffic-analysis 技能生成 · 图表依赖 Chart.js（CDN + SRI 校验，离线时表格数据仍完整可读）</footer>
 

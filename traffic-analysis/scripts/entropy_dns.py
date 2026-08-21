@@ -49,5 +49,9 @@ def analyze_dns_entropy(pcap_path: str, entropy_threshold: float = 3.5,
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python entropy_dns.py <pcap>", file=sys.stderr); sys.exit(1)
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError, OSError):
+        pass
     import json
     print(json.dumps(analyze_dns_entropy(sys.argv[1]), ensure_ascii=False, indent=2))

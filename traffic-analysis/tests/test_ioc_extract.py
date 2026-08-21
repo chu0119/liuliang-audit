@@ -83,6 +83,17 @@ def test_ja3_failure_does_not_break_extraction(monkeypatch, test_pcap):
     assert "185.220.101.42" in iocs["ips"]
     assert any("example.com" in d for d in iocs["domains"])
 
+def test_misp_csv_ja3_type_is_standard(tmp_path):
+    """MISP 标准属性类型为 ja3-fingerprint-md5；ja3-fingerprint 非标准类型。"""
+    csv_path = tmp_path / "ja3.csv"
+    to_misp_csv({"ips": [], "domains": [], "urls": [], "hashes": [],
+                 "ja3": ["e7d705a3286ef19405f687c6ce926d66"],
+                 "user_agents": []}, str(csv_path))
+    lines = csv_path.read_text(encoding="utf-8").splitlines()
+    assert "ja3-fingerprint-md5,e7d705a3286ef19405f687c6ce926d66,Payload delivery" in lines
+    assert not any(l.startswith("ja3-fingerprint,") for l in lines)
+
+
 def test_cli_forces_utf8_stdout(tmp_path):
     """全局约束：所有脚本强制 UTF-8 输出。即使管道编码为 GBK，
     含非 ASCII 的 JSON 也必须以 UTF-8 字节写出，不得 UnicodeEncodeError。

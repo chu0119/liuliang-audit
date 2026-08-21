@@ -87,7 +87,7 @@ def to_misp_csv(iocs: dict, output_path: str):
         for url in iocs["urls"]:
             w.writerow(["url", url, "Network activity"])
         for ja3 in iocs["ja3"]:
-            w.writerow(["ja3-fingerprint", ja3, "Payload delivery"])
+            w.writerow(["ja3-fingerprint-md5", ja3, "Payload delivery"])
         for ua in iocs["user_agents"]:
             w.writerow(["user-agent", ua, "Payload delivery"])
 

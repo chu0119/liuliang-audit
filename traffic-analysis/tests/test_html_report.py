@@ -14,6 +14,7 @@ CONTRACT_PLACEHOLDERS = [
     "{{PCAP_NAME}}", "{{PACKETS_TOTAL}}", "{{DURATION}}", "{{SIZE_CLASS}}",
     "{{START_TIME}}", "{{LINK_TYPE}}", "{{ENDPOINTS_ROWS}}", "{{DNS_ROWS}}",
     "{{TIMELINE_ITEMS}}", "{{IOC_ROWS}}", "{{PROTO_LABELS}}", "{{PROTO_DATA}}",
+    "{{TIMELINE_NOTE}}", "{{IOC_NOTE}}",
 ]
 
 
@@ -209,6 +210,40 @@ def test_pcap_name_is_escaped(tmp_path):
     content = out.read_text(encoding="utf-8")
     assert "<svg onload=alert(1)>" not in content
     assert "&quot;&gt;&lt;svg onload=alert(1)&gt;.pcap" in content
+
+
+def test_timeline_truncation_note(tmp_path):
+    """时间线截断到 50 条时必须渲染截断提示（仅显示前 50 条，共 N 条），
+    且第 51 条起不得渲染。"""
+    events = [{"timestamp": "t", "type": "http_request", "src": "1.1.1.1",
+               "dst": "2.2.2.2", "detail": f"e{i}", "severity": "info"}
+              for i in range(60)]
+    out = tmp_path / "trunc.html"
+    generate_html_report("x.pcap", str(out), _synthetic_profile(), events, {})
+    content = out.read_text(encoding="utf-8")
+    assert "仅显示前 50 条，共 60 条" in content
+    assert "e49" in content and "e50" not in content
+    for ph in CONTRACT_PLACEHOLDERS:
+        assert ph not in content
+
+
+def test_ioc_truncation_note(tmp_path):
+    """IOC 类别截断到 50 条/类时必须渲染截断提示，且第 51 条起不得渲染。"""
+    iocs = {"ips": [f"10.0.0.{i}" for i in range(55)], "domains": [],
+            "urls": [], "hashes": [], "ja3": [], "user_agents": []}
+    out = tmp_path / "ioc_trunc.html"
+    generate_html_report("x.pcap", str(out), _synthetic_profile(), [], iocs)
+    content = out.read_text(encoding="utf-8")
+    assert "共 55 条" in content
+    assert "10.0.0.49" in content and "10.0.0.50" not in content
+
+
+def test_no_truncation_note_when_under_limit(tmp_path):
+    """未截断时不得出现截断提示占位残留或提示文本。"""
+    out = tmp_path / "notrunc.html"
+    generate_html_report("x.pcap", str(out), _synthetic_profile(), [], {})
+    content = out.read_text(encoding="utf-8")
+    assert "仅显示前 50 条" not in content
 
 
 def test_missing_template_raises_loudly(monkeypatch, tmp_path):

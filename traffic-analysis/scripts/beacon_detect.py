@@ -54,5 +54,9 @@ def detect_beacons(pcap_path: str, min_count: int = 5, max_jitter: float = 30.0)
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python beacon_detect.py <pcap>", file=sys.stderr); sys.exit(1)
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError, OSError):
+        pass
     import json
     print(json.dumps(detect_beacons(sys.argv[1]), ensure_ascii=False, indent=2))

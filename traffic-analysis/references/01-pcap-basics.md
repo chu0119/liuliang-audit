@@ -17,6 +17,11 @@ capinfos file.pcap              # 人类可读摘要
 | medium | <500MB 且 <1h | 先画像 → 过滤可疑流 → 定向深析 |
 | large | ≥500MB 或 ≥1h | editcap 时间切片 + 流切割，分批处理 |
 
+判定实现于 `scripts/pcap_profile.py` 的 `_size_class()`：读取 capinfos 的
+File size（字节）与 Capture duration（秒）两个字段——small = bytes<50MB 且
+duration<600s；medium = bytes<500MB 且 duration<3600s；其余为 large。
+包数不参与判定（高包数小文件仍按 small 处理）。
+
 ## 文件修复与切割
 
 ```bash

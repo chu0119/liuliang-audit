@@ -73,6 +73,26 @@ def test_tls_summary_survives_ja3_failure(monkeypatch):
     assert tls["ja3_fingerprints"] == []
     assert len(calls) == 2  # 核心字段与 JA3 分两次调用
 
+def test_size_class_mb_and_duration_thresholds():
+    """规模定级契约（01-pcap-basics.md）：字节数(MB)+时长(s)为权威判定。
+    small = bytes<50MB 且 duration<600s；medium = bytes<500MB 且 duration<3600s；
+    其余 large。包数不参与判定（不得与 MB 契约冲突）。"""
+    MB = 1024 * 1024
+    assert pcap_profile._size_class(1, 100, 10 * MB) == "small"
+    assert pcap_profile._size_class(1, 599, 49 * MB) == "small"
+    assert pcap_profile._size_class(1, 600, 10 * MB) == "medium"       # 时长触及 600s
+    assert pcap_profile._size_class(1, 100, 50 * MB) == "medium"       # 字节触及 50MB
+    assert pcap_profile._size_class(1, 3599, 499 * MB) == "medium"
+    assert pcap_profile._size_class(1, 3600, 10 * MB) == "large"       # 时长触及 1h
+    assert pcap_profile._size_class(1, 100, 500 * MB) == "large"       # 字节触及 500MB
+    assert pcap_profile._size_class(5_000_000, 100, 10 * MB) == "small"  # 包数不影响判定
+
+
+def test_fixture_pcap_is_small(test_pcap):
+    """夹具 pcap 仅数 KB、时长数百秒：MB 契约下必为 small。"""
+    assert profile(str(test_pcap))["size_class"] == "small"
+
+
 def test_profile_raises_on_unreadable_pcap(tmp_path):
     """工具失败必须显式报错，不得输出全零画像（capinfos 对损坏文件 exit 2）。"""
     p = tmp_path / "corrupt.pcap"

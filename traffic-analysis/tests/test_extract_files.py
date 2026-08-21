@@ -52,6 +52,18 @@ def test_extract_objects_raises_on_missing_tshark(monkeypatch, tmp_path):
     with pytest.raises(RuntimeError, match="tshark"):
         extract_objects("x.pcap", str(tmp_path / "out"))
 
+def test_protocol_name_traversal_rejected(tmp_path):
+    """协议名含路径分隔符（".."）是目录穿越隐患：导出前必须响亮拒绝，
+    不得把对象写到输出目录之外。"""
+    from scapy.all import wrpcap, IP, TCP
+    p = tmp_path / "x.pcap"
+    wrpcap(str(p), [IP()/TCP()])
+    with pytest.raises(ValueError, match="\\.\\."):
+        extract_objects(str(p), str(tmp_path / "out"),
+                        protocols=["http", "../evil"])
+    with pytest.raises(ValueError, match="HTTP"):  # 大写/空格同样非法
+        extract_objects(str(p), str(tmp_path / "out"), protocols=["HTTP exfil"])
+
 def test_cli_forces_utf8_stdout(test_pcap, tmp_path):
     """全局约束：所有脚本强制 UTF-8 输出。即使管道编码为 GBK，
     含非 ASCII 路径的 JSON 也必须以 UTF-8 字节写出，不得 UnicodeEncodeError。"""
