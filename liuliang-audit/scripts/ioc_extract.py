@@ -59,16 +59,20 @@ def _dns_qname_field() -> str:
 
 
 def _dns_extract(call):
-    """DNS 字段跨版本兼容：探测选名后运行时若仍报字段无效，自动切换另一名称重试一次。"""
+    """DNS 字段跨版本兼容：探测选名后运行时若仍报字段无效，切换另一名称重试一次（有上限，不无限递归）。"""
     global _DNS_FIELD
-    try:
-        return call(_dns_qname_field())
-    except RuntimeError as e:
-        msg = str(e)
-        if "aren't valid" not in msg and "invalid" not in msg.lower():
-            raise
-    _DNS_FIELD = "dns.qry.name" if _DNS_FIELD == "dns.qname" else "dns.qname"
-    return _dns_extract(call)
+    first = _dns_qname_field()
+    other = "dns.qry.name" if first == "dns.qname" else "dns.qname"
+    for cand in (first, other):
+        _DNS_FIELD = cand
+        try:
+            return call(cand)
+        except RuntimeError as e:
+            msg = str(e)
+            retryable = "aren't valid" in msg or "invalid" in msg.lower()
+            if not retryable or cand == other:
+                raise
+    raise RuntimeError("DNS 字段探测失败")  # 不可达：循环内必然 return 或 raise
 
 
 def _dedupe(values) -> list:

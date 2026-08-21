@@ -31,6 +31,11 @@ jobs:
           capinfos --version | head -1
           python --version
 
+      - name: Diagnose DNS field registration
+        run: |
+          echo "tshark DNS qname fields registered:"
+          tshark -G fields | grep -oE "dns\.q(name|ry\.name)" | sort -u || echo "NONE FOUND"
+
       - name: Run full test suite
         working-directory: liuliang-audit
         run: python -m pytest tests/ -v --tb=short
