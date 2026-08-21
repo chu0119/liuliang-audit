@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>流量分析报告 - demo.pcap</title>
+<!--
+  Chart.js 4.4.0 UMD（npm 包内静态文件，非 jsdelivr 动态压转产物）。
+  SRI 完整性校验（sha384）已对下列确切 URL 计算并经 jsdelivr data API 交叉核对：
+  curl -s https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js \
+    | openssl dgst -sha384 -binary | openssl base64 -A
+  注意：不要改用 chart.umd.min.js——那是 CDN 动态压缩生成的文件，内容可能随
+  jsdelivr 构建管线变化，SRI 会随机失效。
+-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"
+        integrity="sha384-FcQlsUOd0TJjROrBxhJdUhXTUgNJQxTMcxZe6nHbaEfFL1zjQ+bq/uRoBQxb0KMo"
+        crossorigin="anonymous"></script>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:1200px;margin:0 auto;padding:20px;background:#f5f5f5;color:#333}
+h1{border-bottom:3px solid #2563eb;padding-bottom:10px}
+h2{margin-top:0;font-size:18px}
+.card{background:#fff;border-radius:8px;padding:20px;margin:16px 0;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th,td{padding:8px 12px;border:1px solid #e5e7eb;text-align:left;font-size:14px;word-break:break-all}
+th{background:#f9fafb}
+.muted{color:#9ca3af;font-style:italic}
+.severity-high{color:#dc2626;font-weight:bold}
+.severity-medium{color:#d97706;font-weight:bold}
+.severity-info{color:#2563eb}
+.timeline{position:relative;padding-left:24px}
+.timeline-item{border-left:2px solid #2563eb;padding:4px 0 4px 16px;position:relative;margin-bottom:6px}
+.timeline-item::before{content:"";position:absolute;left:-6px;top:10px;width:10px;height:10px;border-radius:50%;background:#2563eb}
+.chart-container{position:relative;height:300px}
+code{background:#f3f4f6;padding:1px 4px;border-radius:3px;font-size:12px}
+footer{color:#9ca3af;font-size:12px;text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<h1>流量分析审计报告</h1>
+
+<div class="card"><h2>基本信息</h2>
+<table><tr><th>文件</th><td>demo.pcap</td><th>总包数</th><td>18</td></tr>
+<tr><th>时长</th><td>330.0s</td><th>大小类</th><td>small</td></tr>
+<tr><th>开始时间</th><td>2026-08-22 05:53:22.692375</td><th>链路类型</th><td>rawip4</td></tr></table></div>
+
+<div class="card"><h2>协议分布</h2><div class="chart-container"><canvas id="protoChart"></canvas></div></div>
+
+<div class="grid">
+<div class="card"><h2>Top 端点</h2><table><tr><th>IP</th><th>包数</th><th>字节</th></tr><tr><td>10.0.0.5</td><td>18</td><td>895</td></tr><tr><td>185.220.101.42</td><td>13</td><td>523</td></tr><tr><td>10.0.0.1</td><td>2</td><td>185</td></tr><tr><td>10.0.0.10</td><td>2</td><td>109</td></tr><tr><td>8.8.8.8</td><td>1</td><td>78</td></tr></table></div>
+<div class="card"><h2>Top 域名</h2><table><tr><th>域名</th><th>次数</th></tr><tr><td>a1b2c3d4e5f6g7h8i9j0.example.com</td><td>1</td></tr></table></div>
+</div>
+
+<div class="card"><h2>事件时间线</h2><div class="timeline"><div class="timeline-item"><span class="severity-info">[http_request]</span> 10.0.0.1 → 10.0.0.5: HTTP GET /secret.txt <small>2026-08-22T05:53:22.692375000+0800</small></div><div class="timeline-item"><span class="severity-info">[dns_query]</span> 10.0.0.5 → 8.8.8.8: DNS 查询: a1b2c3d4e5f6g7h8i9j0.example.com <small>2026-08-22T05:53:23.692375000+0800</small></div><div class="timeline-item"><span class="severity-medium">[ftp_credential]</span> 10.0.0.5 → 10.0.0.10: FTP USER admin <small>2026-08-22T05:56:42.692375000+0800</small></div><div class="timeline-item"><span class="severity-high">[ftp_credential]</span> 10.0.0.5 → 10.0.0.10: FTP PASS s3cr3tP@ss <small>2026-08-22T05:56:42.792375000+0800</small></div></div></div>
+
+<div class="card"><h2>筛查假设（自动）</h2>
+<table><tr><th>类型</th><th>描述</th><th>证据</th></tr><tr><td><span class="severity-medium">dga_dns</span></td><td>高熵域名疑似 DGA: a1b2c3d4e5f6g7h8i9j0.example.com</td><td><code>{&quot;domain&quot;: &quot;a1b2c3d4e5f6g7h8i9j0.example.com&quot;, &quot;entropy&quot;: 4.32}</code></td></tr></table></div>
+
+<div class="card"><h2>IOC 清单</h2><table><tr><th>类型</th><th>值</th></tr><tr><td>ip</td><td>10.0.0.5</td></tr><tr><td>ip</td><td>8.8.8.8</td></tr><tr><td>ip</td><td>185.220.101.42</td></tr><tr><td>ip</td><td>10.0.0.10</td></tr><tr><td>domain</td><td>a1b2c3d4e5f6g7h8i9j0.example.com</td></tr><tr><td>url</td><td>http://evil.com/secret.txt</td></tr></table></div>
+
+<footer>由 traffic-analysis 技能生成 · 图表依赖 Chart.js（CDN + SRI 校验，离线时表格数据仍完整可读）</footer>
+
+<script>
+const protoCtx=document.getElementById('protoChart').getContext('2d');
+new Chart(protoCtx,{type:'doughnut',
+data:{labels:["frame", "raw", "ip", "tcp", "http", "ftp"],datasets:[{data:[18, 18, 18, 14, 2, 2],backgroundColor:['#2563eb','#dc2626','#d97706','#059669','#7c3aed','#0891b2']}]},
+options:{plugins:{legend:{position:'right'}}}});
+</script>
+</body>
+</html>

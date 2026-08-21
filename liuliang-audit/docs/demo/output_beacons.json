@@ -1,0 +1,10 @@
+[
+  {
+    "dst": "185.220.101.42:443",
+    "count": 10,
+    "avg_interval": 30.0,
+    "stdev": 0.0,
+    "jitter_pct": 0.0,
+    "verdict": "LIKELY_BEACON"
+  }
+]

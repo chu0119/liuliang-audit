@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="700" viewBox="0 0 960 700" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="960" height="700" fill="#f8fafc"/>
+  <text x="480" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">liuliang-audit 六层分析架构</text>
+  <text x="480" y="66" text-anchor="middle" font-size="13" fill="#64748b">pcap → 画像 → 筛查 → 研判 → 报告</text>
+
+  <!-- Layer template: x=140 w=560 h=76 -->
+  <!-- 1 交互编排 -->
+  <g>
+    <rect x="140" y="90" width="560" height="76" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="140" y="90" width="8" height="76" rx="4" fill="#7c3aed"/>
+    <text x="170" y="122" font-size="17" font-weight="700" fill="#0f172a">交互编排</text>
+    <text x="170" y="148" font-size="12.5" fill="#475569">SKILL.md · 阶段式人工节点：识别 → 画像 → 筛查 → 研判 → 输出，每阶段汇报并确认方向</text>
+    <text x="730" y="133" font-size="12" fill="#7c3aed" font-weight="600">SKILL.md</text>
+  </g>
+  <line x1="420" y1="166" x2="420" y2="196" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 2 输入处理 -->
+  <g>
+    <rect x="140" y="198" width="560" height="76" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="140" y="198" width="8" height="76" rx="4" fill="#0891b2"/>
+    <text x="170" y="230" font-size="17" font-weight="700" fill="#0f172a">输入处理</text>
+    <text x="170" y="256" font-size="12.5" fill="#475569">文件识别（capinfos）· 合并切割（mergecap/editcap）· 损坏包修复 · 规模定级</text>
+    <text x="730" y="241" font-size="12" fill="#0891b2" font-weight="600">&lt;50MB / &lt;500MB / ≥500MB</text>
+  </g>
+  <line x1="420" y1="274" x2="420" y2="304" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 3 流量画像 -->
+  <g>
+    <rect x="140" y="306" width="560" height="76" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="140" y="306" width="8" height="76" rx="4" fill="#2563eb"/>
+    <text x="170" y="338" font-size="17" font-weight="700" fill="#0f172a">流量画像</text>
+    <text x="170" y="364" font-size="12.5" fill="#475569">协议层级 · 端点 Top N · 会话统计 · 端口分布 · 时间突发 —— 全部 tshark -z C 实现</text>
+    <text x="730" y="349" font-size="12" fill="#2563eb" font-weight="600">JSON 契约</text>
+  </g>
+  <line x1="420" y1="382" x2="420" y2="412" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 4 深度检测 -->
+  <g>
+    <rect x="140" y="414" width="560" height="92" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="140" y="414" width="8" height="92" rx="4" fill="#d97706"/>
+    <text x="170" y="444" font-size="17" font-weight="700" fill="#0f172a">深度检测</text>
+    <text x="170" y="468" font-size="12.5" fill="#475569">协议专项（HTTP/DNS/TLS/SMB/FTP/邮件/DB/远程管理）· 攻击行为（信标/隧道/横向/外传）</text>
+    <text x="170" y="490" font-size="12.5" fill="#475569">CTF 取证（对象还原/隐藏数据/flag 定位）· Zeek/Suricata 可选增强</text>
+    <text x="730" y="465" font-size="12" fill="#d97706" font-weight="600">scripts/ ×7</text>
+  </g>
+  <line x1="420" y1="506" x2="420" y2="536" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 5 研判关联 -->
+  <g>
+    <rect x="140" y="538" width="560" height="76" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="140" y="538" width="8" height="76" rx="4" fill="#dc2626"/>
+    <text x="170" y="570" font-size="17" font-weight="700" fill="#0f172a">研判关联</text>
+    <text x="170" y="596" font-size="12.5" fill="#475569">时间线重建 · 攻击链还原 · IOC 标准化（MISP）· ATT&amp;CK 映射 · 误报排除</text>
+    <text x="730" y="581" font-size="12" fill="#dc2626" font-weight="600">timeline / ioc</text>
+  </g>
+  <line x1="420" y1="614" x2="420" y2="640" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 6 输出交付 -->
+  <g>
+    <rect x="140" y="642" width="560" height="48" rx="10" fill="#0f172a"/>
+    <text x="170" y="672" font-size="16" font-weight="700" fill="#f8fafc">输出交付</text>
+    <text x="300" y="672" font-size="12.5" fill="#cbd5e1">Markdown 报告 · HTML 可视化报告 · MISP IOC 清单 · 提取文件证据清单</text>
+  </g>
+
+  <!-- 左侧数据流标注 -->
+  <text x="80" y="400" font-size="14" fill="#2563eb" font-weight="600" transform="rotate(-90 80 400)" text-anchor="middle">数 据 流</text>
+  <line x1="100" y1="120" x2="100" y2="660" stroke="#93c5fd" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 右侧原则标注 -->
+  <text x="925" y="400" font-size="13" fill="#64748b" transform="rotate(90 925 400)" text-anchor="middle">tshark C 实现 · 禁止全量载入 · 大声失败 · 全链路 UTF-8</text>
+</svg>

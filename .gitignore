@@ -3,3 +3,5 @@ __pycache__/
 .agentic-security/
 .superpowers/
 .pytest_cache/
+test/
+out/

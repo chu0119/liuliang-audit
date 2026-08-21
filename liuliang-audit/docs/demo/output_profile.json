@@ -1,0 +1,252 @@
+{
+  "file": "D:\\xiangmu\\skill\\liuliang\\liuliang-audit\\docs\\demo\\demo.pcap",
+  "capture": {
+    "packets_total": 18,
+    "bytes_total": 1207,
+    "duration_seconds": 330.0,
+    "start_time": "2026-08-22 05:53:22.692375",
+    "link_type": "rawip4",
+    "truncated": false
+  },
+  "size_class": "small",
+  "protocol_hierarchy": [
+    {
+      "protocol": "frame",
+      "packets": 18,
+      "pct": 100.0
+    },
+    {
+      "protocol": "raw",
+      "packets": 18,
+      "pct": 100.0
+    },
+    {
+      "protocol": "ip",
+      "packets": 18,
+      "pct": 100.0
+    },
+    {
+      "protocol": "tcp",
+      "packets": 14,
+      "pct": 77.78
+    },
+    {
+      "protocol": "http",
+      "packets": 2,
+      "pct": 11.11
+    },
+    {
+      "protocol": "ftp",
+      "packets": 2,
+      "pct": 11.11
+    },
+    {
+      "protocol": "udp",
+      "packets": 1,
+      "pct": 5.56
+    },
+    {
+      "protocol": "dns",
+      "packets": 1,
+      "pct": 5.56
+    },
+    {
+      "protocol": "icmp",
+      "packets": 3,
+      "pct": 16.67
+    }
+  ],
+  "endpoints_top": [
+    {
+      "ip": "10.0.0.5",
+      "packets": 18,
+      "bytes": 895
+    },
+    {
+      "ip": "185.220.101.42",
+      "packets": 13,
+      "bytes": 523
+    },
+    {
+      "ip": "10.0.0.1",
+      "packets": 2,
+      "bytes": 185
+    },
+    {
+      "ip": "10.0.0.10",
+      "packets": 2,
+      "bytes": 109
+    },
+    {
+      "ip": "8.8.8.8",
+      "packets": 1,
+      "bytes": 78
+    }
+  ],
+  "conversations_top": [
+    {
+      "src": "10.0.0.1:52000",
+      "dst": "10.0.0.5:80",
+      "packets": 1,
+      "bytes": 84
+    },
+    {
+      "src": "10.0.0.1:52001",
+      "dst": "10.0.0.5:80",
+      "packets": 1,
+      "bytes": 101
+    },
+    {
+      "src": "10.0.0.5:50000",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50001",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50002",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50003",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50004",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50005",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50006",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    },
+    {
+      "src": "10.0.0.5:50007",
+      "dst": "185.220.101.42:443",
+      "packets": 1,
+      "bytes": 40
+    }
+  ],
+  "ports_top": [
+    {
+      "port": 443,
+      "protocol": "tcp",
+      "packets": 10
+    },
+    {
+      "port": 80,
+      "protocol": "tcp",
+      "packets": 2
+    },
+    {
+      "port": 21,
+      "protocol": "tcp",
+      "packets": 2
+    },
+    {
+      "port": 52000,
+      "protocol": "tcp",
+      "packets": 1
+    },
+    {
+      "port": 52001,
+      "protocol": "tcp",
+      "packets": 1
+    },
+    {
+      "port": 50000,
+      "protocol": "tcp",
+      "packets": 1
+    },
+    {
+      "port": 50001,
+      "protocol": "tcp",
+      "packets": 1
+    },
+    {
+      "port": 50002,
+      "protocol": "tcp",
+      "packets": 1
+    },
+    {
+      "port": 50003,
+      "protocol": "tcp",
+      "packets": 1
+    },
+    {
+      "port": 50004,
+      "protocol": "tcp",
+      "packets": 1
+    }
+  ],
+  "time_distribution": [
+    {
+      "bucket": "0-60s",
+      "packets": 3
+    },
+    {
+      "bucket": "60-120s",
+      "packets": 2
+    },
+    {
+      "bucket": "120-180s",
+      "packets": 2
+    },
+    {
+      "bucket": "180-240s",
+      "packets": 2
+    },
+    {
+      "bucket": "240-300s",
+      "packets": 2
+    },
+    {
+      "bucket": "300s+",
+      "packets": 7
+    }
+  ],
+  "dns_summary": {
+    "queries_total": 1,
+    "unique_domains": 1,
+    "top_domains": [
+      {
+        "domain": "a1b2c3d4e5f6g7h8i9j0.example.com",
+        "count": 1
+      }
+    ]
+  },
+  "tls_summary": {
+    "handshakes": 0,
+    "unique_sni": [],
+    "ja3_fingerprints": []
+  },
+  "suspicious_hypotheses": [
+    {
+      "type": "dga_dns",
+      "severity": "medium",
+      "description": "高熵域名疑似 DGA: a1b2c3d4e5f6g7h8i9j0.example.com",
+      "evidence": {
+        "domain": "a1b2c3d4e5f6g7h8i9j0.example.com",
+        "entropy": 4.32
+      }
+    }
+  ]
+}
